@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MessenCharles</title>
+  <link rel="stylesheet" href="/css/landingpage.css" />
+</head>
+<body class="landing">
+
+  <div class="landing-container">
+    <h1>💬 MessenCharles</h1>
+    <p class="tagline">
+      A simple, secure, real-time chat app built for people you actually know.
+    </p>
+    <p class="subtitle">
+      A lightweight, real-time chat app built with WebSockets & JWT security.
+    </p>
+    <p class="description">
+      Secure. Fast. Simple.  
+      Chat in real time with authenticated users — no noise, no clutter.
+    </p>
+
+    <br>
+    <br>
+    <div class="features ">
+      <p>🔐 Authenticated users only</p>
+      <p>⚡ Real-time WebSocket messaging</p>
+      <p>🧾 Nicknames, not random names</p>
+      <p>🐳 Docker-powered deployment</p>
+    </div>
+
+    <button class="primary-btn" onclick="goToLogin()">
+      Login to Chat
+    </button>
+  </div>
+  <script src="/js/script.js"></script>
+  <script>
+    function goToLogin() {
+      window.location.href = 'login.html'
+    }
+  </script>
+</body>
+</html>

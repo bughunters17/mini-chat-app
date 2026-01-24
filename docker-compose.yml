@@ -8,3 +8,12 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+
+  chat-client:
+    build:
+      context: ./client
+    container_name: messencharles-client
+    ports:
+      - "8080:8080"
+    depends_on:
+      - chat-server

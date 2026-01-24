@@ -45,5 +45,5 @@ function addMessage(senderUsername, senderNickname, message) {
 document.getElementById('logoutBtn').addEventListener('click', () => {
   ws.close()
   sessionStorage.clear()
-  window.location.href = 'login.html'
+  window.location.href = '/'
 })

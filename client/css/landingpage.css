@@ -1,0 +1,79 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Landing Page Background */
+  body.landing {
+    min-height: 100vh;
+    background:
+      linear-gradient(
+        135deg,
+        rgba(72, 85, 121, 0.85),
+        rgba(42, 157, 143, 0.85)
+      ),
+      url('bg-chat.jpg');
+    background-size: cover;
+    background-position: center;
+    color: #ffffff;
+  }
+  
+  /* Dark overlay for readability */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Content */
+  .landing-container {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+    margin: auto;
+    padding: 80px 30px;
+    text-align: center;
+  }
+  
+  .landing-container h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+  
+  .tagline {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 30px;
+  }
+  
+  /* Features */
+  .features {
+    list-style: none;
+    margin-bottom: 40px;
+  }
+  
+  .features li {
+    font-size: 1rem;
+    margin: 10px 0;
+  }
+  
+  /* Button */
+  .login-btn {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    border: none;
+    padding: 14px 40px;
+    font-size: 1rem;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+  
