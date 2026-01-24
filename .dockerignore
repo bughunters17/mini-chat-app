@@ -1,0 +1,16 @@
+# Node
+node_modules
+npm-debug.log
+yarn.lock
+
+# Env
+.env
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Ignore root package.json (server has its own)
+package.json
+package-lock.json

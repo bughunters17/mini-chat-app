@@ -1,16 +1,12 @@
 const username = sessionStorage.getItem('auth_user')
-const password = sessionStorage.getItem('auth_pass')
 const myNickname = sessionStorage.getItem('auth_nickname')
+const token = sessionStorage.getItem('token')
 
-if (!username || !password) {
-  // user is not logged in → redirect to login page
+if (!token) {
   window.location.href = 'login.html'
 }
 
-// Connect to WebSocket
-const ws = new WebSocket(
-  `ws://localhost:3000/?username=${username}&password=${password}`
-)
+const ws = new WebSocket(`ws://localhost:3000/?token=${token}`)
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data)
@@ -23,7 +19,6 @@ ws.onmessage = (event) => {
   }
 
   if (data.type === 'chat') {
-    // Pass both username and nickname to addMessage
     addMessage(data.username, data.user, data.message)
   }
 }
@@ -37,26 +32,18 @@ function sendMessage() {
   input.value = ''
 }
 
-// FIXED: now we know both senderUsername and senderNickname
 function addMessage(senderUsername, senderNickname, message) {
   const chat = document.getElementById('chat')
   const div = document.createElement('div')
-
-  // Use username to decide alignment
   div.classList.add('message', senderUsername === username ? 'self' : 'other')
-
   div.innerHTML = `<strong>${senderNickname}</strong> ${message}`
   chat.appendChild(div)
   chat.scrollTop = chat.scrollHeight
 }
 
-// Logout functionality
-const logoutBtn = document.getElementById('logoutBtn')
-logoutBtn.addEventListener('click', () => {
-  // Close WebSocket connection
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', () => {
   ws.close()
-  // Clear session storage
   sessionStorage.clear()
-  // Redirect to login page
   window.location.href = 'login.html'
 })
