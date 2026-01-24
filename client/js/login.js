@@ -23,7 +23,7 @@ async function login() {
     sessionStorage.setItem('auth_user', payload.username)
     sessionStorage.setItem('auth_nickname', payload.nickname)
 
-    window.location.href = 'chat.html'
+    window.location.href = 'dashboard.html'
   } catch (err) {
     error.textContent = err.message
   }

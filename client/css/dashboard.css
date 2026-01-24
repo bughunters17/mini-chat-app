@@ -1,0 +1,52 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f1f1f1;
+  }
+  
+  .dashboard-container {
+    max-width: 900px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    padding: 20px;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-main {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .online-users-section, .recent-chats-section {
+    flex: 1;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    height: 400px;
+    overflow-y: auto;
+  }
+  
+  #online-users div, #recent-chats div {
+    padding: 8px;
+    margin-bottom: 5px;
+    background: #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #online-users div.self {
+    background: #bbb;
+  }
+  #online-users div:hover, #recent-chats div:hover {
+    background: #ccc;
+  }
+  
