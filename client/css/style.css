@@ -123,3 +123,18 @@
     background: #006fd6;
   }
   
+  .logout-btn {
+    float: right;
+    background: #e53935;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .logout-btn:hover {
+    background: #c62828;
+  }
+  

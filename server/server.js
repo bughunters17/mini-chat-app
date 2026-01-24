@@ -1,23 +1,52 @@
+const http = require('http')
 const WebSocket = require('ws')
 
-const PORT = 3000
-const wss = new WebSocket.Server({ port: PORT })
+const users = {
+    crz: { password: '1234', nickname: 'Charles' },
+    kmz: { password: '4321', nickname: 'Karen' }
+}
 
-console.log(`WebSocket server running on ws://localhost:${PORT}`)
+const server = http.createServer()
+const wss = new WebSocket.Server({ server })
 
-wss.on('connection', (ws) => {
-  console.log('New client connected')
+server.listen(3000, () => {
+    console.log('MessenCharles server running on port 3000')
+})
 
-  ws.on('message', (message) => {
-    // Broadcast message to all clients
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message.toString())
-      }
+wss.on('connection', (ws, req) => {
+    const params = new URLSearchParams(req.url.replace('/?', ''))
+    const username = params.get('username')
+    const password = params.get('password')
+
+    // 🔐 AUTHENTICATION CHECK
+    if (!users[username] || users[username].password !== password) {
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid username or password' }))
+        ws.close()
+        return
+    }
+    ws.username = username
+    ws.nickname = users[username].nickname
+    
+    ws.send(JSON.stringify({
+            type: 'system',
+            message: 'Authenticated'
+        })
+    )
+
+    ws.on('message', (message) => {
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                    type: 'chat',
+                    username: ws.username,
+                    user: ws.nickname, // for display
+                    message: message.toString()
+                }))
+            }
+        })
     })
-  })
 
-  ws.on('close', () => {
-    console.log('Client disconnected')
-  })
+    ws.on('close', () => {
+        console.log(`❌ ${ws.username} disconnected`)
+    })
 })
