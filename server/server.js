@@ -1,3 +1,4 @@
+const db = require('./initDB');
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
@@ -5,43 +6,48 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path');
-const db = require('./initDB'); // your DB initialization
+
+const {
+    saveMessage,
+    loadConversation,
+    loadRecentChats
+} = require('./messageRepo');
+
 const SECRET_KEY = 'MessenCharlesSecretKey';
+
+// ------------------- USERS (TEMP / WILL MOVE TO DB) -------------------
+const users = {
+    crz: { password: bcrypt.hashSync('1234', 10), nickname: 'Charles' },
+    kmz: { password: bcrypt.hashSync('4321', 10), nickname: 'Karen' }
+};
 
 // ------------------- EXPRESS LOGIN -------------------
 const app = express();
 
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
 }));
 
 app.use(bodyParser.json());
 
 app.post('/login', (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
+    const user = users[username];
 
-  const user = db
-    .prepare('SELECT * FROM users WHERE username = ?')
-    .get(username);
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
 
-  if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ message: 'Invalid username or password' });
-  }
+    const token = jwt.sign(
+        { username, nickname: user.nickname },
+        SECRET_KEY,
+        { expiresIn: '2h' }
+    );
 
-  const token = jwt.sign(
-    { username: user.username, nickname: user.nickname },
-    SECRET_KEY,
-    { expiresIn: '2h' }
-  );
-
-  res.json({ token, nickname: user.nickname });
+    res.json({ token, nickname: user.nickname });
 });
-
-
-
 
 // ------------------- WEBSOCKET SERVER -------------------
 const server = http.createServer(app);
@@ -50,46 +56,22 @@ const wss = new WebSocket.Server({ server });
 // Track online users
 const onlineUsers = new Map(); // username -> ws
 
-// ------------------- Helpers -------------------
-
-// Save message in SQLite
-function saveMessage(sender, receiver, message) {
-    db.run(
-        `INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)`,
-        [sender, receiver, message],
-        (err) => {
-            if (err) console.error('Error saving message:', err);
-        }
-    );
-}
-
-// Load chat history between two users
-function loadHistory(user, otherUser, callback) {
-    db.all(
-        `SELECT sender, receiver, message, timestamp FROM messages 
-         WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)
-         ORDER BY timestamp ASC`,
-        [user, otherUser, otherUser, user],
-        (err, rows) => {
-            if (err) {
-                console.error('Error loading history:', err);
-                callback([]);
-            } else {
-                callback(rows);
-            }
-        }
-    );
-}
-
-// Broadcast online users with username & nickname
+// ------------------- Broadcast Online Users -------------------
 function broadcastOnlineUsers() {
-    const usersList = Array.from(onlineUsers.keys()).map(u => {
-        return { username: u, nickname: onlineUsers.get(u).nickname };
+    const usersList = Array.from(onlineUsers.keys()).map(u => ({
+        username: u,
+        nickname: users[u]?.nickname || u
+    }));
+
+    const msg = JSON.stringify({
+        type: 'online-users',
+        users: usersList
     });
-    const msg = JSON.stringify({ type: 'online-users', users: usersList });
 
     onlineUsers.forEach(ws => {
-        if (ws.readyState === WebSocket.OPEN) ws.send(msg);
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(msg);
+        }
     });
 }
 
@@ -107,7 +89,7 @@ wss.on('connection', (ws, req) => {
     let payload;
     try {
         payload = jwt.verify(token, SECRET_KEY);
-    } catch (err) {
+    } catch {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
         ws.close();
         return;
@@ -115,44 +97,53 @@ wss.on('connection', (ws, req) => {
 
     ws.username = payload.username;
     ws.nickname = payload.nickname;
+
     onlineUsers.set(ws.username, ws);
-
-    // Confirm auth
-    ws.send(JSON.stringify({ type: 'system', message: 'Authenticated' }));
-
-    // Update everyone with online users
-    broadcastOnlineUsers();
 
     console.log(`✅ ${ws.nickname} connected`);
 
-    // Handle incoming messages
-    ws.on('message', (rawMsg) => {
-        let msgObj;
+    // ---------------- SEND RECENT CHATS (DB) ----------------
+    const recent = loadRecentChats(ws.username);
+    ws.send(JSON.stringify({
+        type: 'recent-chats',
+        chats: recent
+    }));
+
+    // ---------------- UPDATE ONLINE USERS ----------------
+    broadcastOnlineUsers();
+
+    // ---------------- HANDLE INCOMING MESSAGES ----------------
+    ws.on('message', (raw) => {
+        let msg;
         try {
-            msgObj = JSON.parse(rawMsg); // { to, message }
+            msg = JSON.parse(raw);
         } catch {
-            msgObj = { message: rawMsg }; // fallback plain text
+            return;
         }
 
-        onlineUsers.forEach((client, uname) => {
-            if (client.readyState === WebSocket.OPEN) {
-                // Only send to intended user or self
-                if (!msgObj.to || msgObj.to === uname || uname === ws.username) {
-                    client.send(JSON.stringify({
-                        type: 'chat',
-                        sender: ws.username,
-                        user: ws.nickname,
-                        message: msgObj.message,
-                        to: msgObj.to || null
-                    }));
-                }
+        if (!msg.to || !msg.message) return;
 
-                // Save message in SQLite for recipient
-                if (uname !== ws.username && (!msgObj.to || msgObj.to === uname)) {
-                    saveMessage(ws.username, uname, msgObj.message);
-                }
-            }
-        });
+        // Persist message
+        saveMessage(ws.username, msg.to, msg.message);
+
+        // Send to receiver
+        const target = onlineUsers.get(msg.to);
+        if (target && target.readyState === WebSocket.OPEN) {
+            target.send(JSON.stringify({
+                type: 'chat',
+                sender: ws.username,
+                message: msg.message,
+                to: msg.to
+            }));
+        }
+
+        // Echo back to sender (server-authoritative)
+        ws.send(JSON.stringify({
+            type: 'chat',
+            sender: ws.username,
+            message: msg.message,
+            to: msg.to
+        }));
     });
 
     ws.on('close', () => {

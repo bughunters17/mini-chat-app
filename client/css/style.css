@@ -122,7 +122,7 @@
   .chat-input button:hover {
     background: #006fd6;
   }
-  
+
   .logout-btn {
     float: right;
     background: #e53935;
@@ -137,4 +137,3 @@
   .logout-btn:hover {
     background: #c62828;
   }
-  
