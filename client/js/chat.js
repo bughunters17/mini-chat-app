@@ -1,3 +1,5 @@
+import { createSocket } from './socket';
+
 const token = sessionStorage.getItem('token');
 const username = sessionStorage.getItem('auth_user');
 const nickname = sessionStorage.getItem('auth_nickname');
@@ -9,7 +11,7 @@ if (!token || !username || !chatWithUser) {
     window.location.href = '/dashboard.html';
 }
 
-const ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
+const ws = createSocket(token);
 const chatEl = document.getElementById('chat');
 const headerEl = document.querySelector('.chat-header');
 
@@ -27,31 +29,42 @@ ws.onmessage = (event) => {
         return;
     }
 
+    // Load recent chat history
+    if (data.type === 'history') {
+        data.messages.forEach(msg => {
+            if ((msg.sender === chatWithUser && msg.receiver === username) || 
+                (msg.sender === username && msg.receiver === chatWithUser)) {
+                const displayName = msg.sender === username ? nickname : chatWithNickname;
+                addMessage(displayName, msg.message, msg.sender === username);
+            }
+        });
+    }
+
     if (data.type === 'chat') {
-      // Only show messages between you and the current chat user
-      if (data.sender === chatWithUser || data.sender === username) {
-          const displayName = data.sender === username ? nickname : chatWithNickname;
-          addMessage(displayName, data.message, data.sender === username);
-      }
+        // Only show messages between you and the current chat user
+        if (data.sender === chatWithUser || data.sender === username) {
+            const displayName = data.sender === username ? nickname : chatWithNickname;
+            addMessage(displayName, data.message, data.sender === username);
+        }
     }
 };
 
 // ---------------- Functions ----------------
 function sendMessage() {
-  const input = document.getElementById('message');
-  const msg = input.value.trim();
-  if (!msg) return;
+    const input = document.getElementById('message');
+    const msg = input.value.trim();
+    if (!msg) return;
 
-  // Send as { to, message } for private chat
-  ws.send(JSON.stringify({ to: chatWithUser, message: msg }));
+    // Send as { to, message } for private chat
+    ws.send(JSON.stringify({ to: chatWithUser, message: msg }));
 
-  input.value = '';
+    input.value = '';
 }
 
 function addMessage(user, message, self = false) {
     const div = document.createElement('div');
     div.classList.add('message', self ? 'self' : 'other');
-    div.innerHTML = `<strong>${user}</strong> ${message}`;
+    div.innerHTML = `<strong>${user}</strong>: ${message}`;
     chatEl.appendChild(div);
     chatEl.scrollTop = chatEl.scrollHeight;
 }
