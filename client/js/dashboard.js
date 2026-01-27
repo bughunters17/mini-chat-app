@@ -71,5 +71,5 @@ function openChat(user) {
 
 function logout() {
     sessionStorage.clear();
-    window.location.href = '/dashboard.html';
+    window.location.href = '/';
 }
