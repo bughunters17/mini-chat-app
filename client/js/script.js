@@ -1,4 +1,4 @@
-import { createSocket } from './socket';
+import { createSocket } from './socket.js';
 
 const chatEl = document.getElementById('chat');
 const username = document.getElementById('username').value || 'Anonymous'; // optional for demo
