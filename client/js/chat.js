@@ -1,4 +1,4 @@
-import { createSocket } from './socket';
+import { createSocket } from './socket.js';
 
 const token = sessionStorage.getItem('token');
 const username = sessionStorage.getItem('auth_user');
