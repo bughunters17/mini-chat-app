@@ -1,5 +1,13 @@
 const chat = document.getElementById('chat')
-const ws = new WebSocket('ws://localhost:3000')
+
+// Configuration: set to 'local' or 'render'
+const SERVER_ENV = 'local'
+const WS_URLS = {
+  local: 'ws://localhost:3000',
+  render: 'wss://mini-chat-app-server.onrender.com'
+}
+
+const ws = new WebSocket(WS_URLS[SERVER_ENV])
 
 ws.onmessage = (event) => {
   addMessage(event.data)
