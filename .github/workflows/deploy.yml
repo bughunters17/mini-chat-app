@@ -19,8 +19,8 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/ssh_host_ed25519_key
+          chmod 600 ~/.ssh/ssh_host_ed25519_key
           PORT=${SSH_PORT:-22}
           ssh-keyscan -p "$PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
 
