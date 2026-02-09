@@ -1,4 +1,4 @@
-const db = require('./initDB');
+require('./initDB');
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
@@ -9,8 +9,7 @@ const cors = require('cors');
 
 const {
     saveMessage,
-    loadConversation,
-    loadRecentChats
+    loadConversation
 } = require('./messageRepo');
 
 const SECRET_KEY = 'MessenCharlesSecretKey';
@@ -58,35 +57,6 @@ const onlineUsers = new Map(); // username -> ws
 const disconnectTimers = new Map(); // username -> timeout
 
 // ------------------- Helpers -------------------
-
-// Prepared statements for SQLite
-const insertMessageStmt = db.prepare(
-    `INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)`
-);
-const historyStmt = db.prepare(
-    `SELECT sender, receiver, message, timestamp FROM messages 
-     WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)
-     ORDER BY timestamp ASC`
-);
-
-// Save message in SQLite
-function saveMessage(sender, receiver, message) {
-    try {
-        insertMessageStmt.run(sender, receiver, message);
-    } catch (err) {
-        console.error('Error saving message:', err);
-    }
-}
-
-// Load chat history between two users
-function loadHistory(user, otherUser) {
-    try {
-        return historyStmt.all(user, otherUser, otherUser, user);
-    } catch (err) {
-        console.error('Error loading history:', err);
-        return [];
-    }
-}
 
 // Broadcast online users with username & nickname
 function broadcastOnlineUsers() {
@@ -155,7 +125,7 @@ wss.on('connection', (ws, req) => {
         }
 
         if (msgObj.type === 'history' && msgObj.with) {
-            const history = loadHistory(ws.username, msgObj.with);
+            const history = loadConversation(ws.username, msgObj.with);
             ws.send(JSON.stringify({
                 type: 'history',
                 with: msgObj.with,
