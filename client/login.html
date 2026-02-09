@@ -16,12 +16,15 @@
 
     <input id="username" placeholder="Username" />
     <input id="password" type="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+    <button id="login-btn">Login</button>
 
     <p class="error" id="error"></p>
   </div>
 
-<script type="module" src="./js/login.js"></script>
+<script type="module">
+  import { login } from './js/login.js';
+  document.getElementById('login-btn').addEventListener('click', login);
+</script>
 </body>
 </html>
 
