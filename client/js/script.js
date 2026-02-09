@@ -1,47 +1,50 @@
-const chat = document.getElementById('chat')
+import { createSocket } from './socket.js';
 
-// Configuration: set to 'local' or 'render'
-const SERVER_ENV = 'local'
-const WS_URLS = {
-  local: 'ws://localhost:3000',
-  render: 'wss://mini-chat-app-server.onrender.com'
-}
+const chatEl = document.getElementById('chat');
+const username = document.getElementById('username').value || 'Anonymous'; // optional for demo
+const token = sessionStorage.getItem('token');
 
-const ws = new WebSocket(WS_URLS[SERVER_ENV])
+// Use singleton WebSocket
+const ws = createSocket(token);
 
+// ---------------- WebSocket ----------------
 ws.onmessage = (event) => {
-  addMessage(event.data)
-}
+    const data = JSON.parse(event.data);
 
+    if (data.type === 'chat') {
+        const displayName = data.sender;
+        addMessage(displayName, data.message, data.sender === username);
+    }
+
+    // Load history if sent by server
+    if (data.type === 'history') {
+        data.messages.forEach(msg => {
+            addMessage(msg.sender, msg.message, msg.sender === username);
+        });
+    }
+};
+
+// ---------------- Send Message ----------------
 function sendMessage() {
-  const user = document.getElementById('username').value || 'Anonymous'
-  const msgInput = document.getElementById('message')
-  const msg = msgInput.value.trim()
+    const msgInput = document.getElementById('message');
+    const msg = msgInput.value.trim();
+    if (!msg) return;
 
-  if (!msg) return
-
-  ws.send(`${user}|${msg}`)
-  msgInput.value = ''
+    // Send as JSON object for private chat (or broadcast if you want)
+    ws.send(JSON.stringify({ to: 'ALL', message: msg })); // 'ALL' can be replaced with private username
+    msgInput.value = '';
 }
 
-function addMessage(data) {
-  const currentUser = document.getElementById('username').value || 'Anonymous'
-  const separatorIndex = data.indexOf('|')
-
-  const user = data.substring(0, separatorIndex)
-  const message = data.substring(separatorIndex + 1)
-
-  const div = document.createElement('div')
-  div.classList.add('message')
-
-  div.classList.add(user === currentUser ? 'self' : 'other')
-
-  div.innerHTML = `<strong>${user}</strong>${message}`
-  chat.appendChild(div)
-  chat.scrollTop = chat.scrollHeight
+// ---------------- Render Message ----------------
+function addMessage(user, message, self = false) {
+    const div = document.createElement('div');
+    div.classList.add('message', self ? 'self' : 'other');
+    div.innerHTML = `<strong>${user}</strong>: ${message}`;
+    chatEl.appendChild(div);
+    chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-// Send on Enter key
+// ---------------- Send on Enter ----------------
 document.getElementById('message').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendMessage()
-})
+    if (e.key === 'Enter') sendMessage();
+});

@@ -1,11 +1,11 @@
+import { createSocket } from './socket.js';
 const token = sessionStorage.getItem('token');
 const username = sessionStorage.getItem('auth_user');
 const nickname = sessionStorage.getItem('auth_nickname');
 
 if (!token || !username) window.location.href = '/';
 
-const ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
-
+const ws = createSocket(token);
 const onlineEl = document.getElementById('online-users');
 const recentEl = document.getElementById('recent-chats');
 
