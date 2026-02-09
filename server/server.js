@@ -57,9 +57,6 @@ const wss = new WebSocket.Server({ server });
 const onlineUsers = new Map(); // username -> ws
 const disconnectTimers = new Map(); // username -> timeout
 
-<<<<<<< HEAD
-// ------------------- Broadcast Online Users -------------------
-=======
 // ------------------- Helpers -------------------
 
 // Prepared statements for SQLite
@@ -92,7 +89,6 @@ function loadHistory(user, otherUser) {
 }
 
 // Broadcast online users with username & nickname
->>>>>>> 67b6133 (enhance the ui and server connection, created cicd pipeline and improve server response)
 function broadcastOnlineUsers() {
     const usersList = Array.from(onlineUsers.keys()).map(u => ({
         username: u,
