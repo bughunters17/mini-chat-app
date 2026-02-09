@@ -3,107 +3,66 @@
 ========================= */
 
 .login-screen {
-    width: 380px;
-    background: #ffffff;
+    width: min(100%, 420px);
+    background: rgba(255, 255, 255, 0.96);
     padding: 24px 20px;
     border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 18px 45px rgba(0,0,0,0.25);
     text-align: center;
+    margin: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
   
-  .login-screen h2 {
+.login-screen h2 {
     margin: 0;
-    color: #0084ff;
+    color: #1f5fd6;
     font-size: 24px;
   }
   
-  .login-screen p {
+.login-screen p {
     margin: 6px 0 20px;
     font-size: 14px;
-    color: #666;
+    color: #475569;
   }
   
-  .login-screen input {
+.login-screen input {
     width: 100%;
     padding: 10px 14px;
     margin-bottom: 12px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
+    border-radius: 999px;
+    border: 1px solid #cbd5f5;
     outline: none;
     font-size: 14px;
   }
   
-  .login-screen input:focus {
-    border-color: #0084ff;
+.login-screen input:focus {
+    border-color: #2f7bff;
   }
   
-  .login-screen button {
+.login-screen button {
     width: 100%;
     padding: 10px;
-    border-radius: 20px;
-    background: #0084ff;
+    border-radius: 999px;
+    background: #2f7bff;
     color: white;
     border: none;
     font-size: 15px;
     cursor: pointer;
   }
   
-  .login-screen button:hover {
-    background: #006fd6;
+.login-screen button:hover {
+    background: #1f5fd6;
   }
   
-  .login-screen .error {
+.login-screen .error {
     margin-top: 10px;
     font-size: 13px;
     color: #e53935;
   }
-  
-  body.landing {
-  background: linear-gradient(135deg, #0084ff, #00c6ff);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: Arial, sans-serif;
-}
 
-.landing-container {
-  background: white;
-  padding: 40px;
-  border-radius: 16px;
-  width: 360px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.landing-container h1 {
-  margin-bottom: 10px;
-}
-
-.tagline {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 20px;
-}
-
-.features p {
-  font-size: 13px;
-  color: #333;
-  margin: 6px 0;
-}
-
-.primary-btn {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #0084ff;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.primary-btn:hover {
-  background: #006fe0;
-}
+  @media (max-width: 520px) {
+    .login-screen {
+      padding: 20px 16px;
+      border-radius: 12px;
+    }
+  }

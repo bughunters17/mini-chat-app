@@ -4,18 +4,17 @@
   
   body {
     margin: 0;
-    background: #e4e6eb;
-    font-family: Arial, sans-serif;
-    height: 100vh;
+    min-height: 100svh;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 16px;
   }
   
   .chat-app {
-    width: 380px;
-    height: 620px;
-    background: #fff;
+    width: min(100%, 420px);
+    height: min(100svh, 720px);
+    background: rgba(255, 255, 255, 0.96);
     display: flex;
     flex-direction: column;
     border-radius: 14px;
@@ -25,7 +24,7 @@
   
   /* HEADER */
   .chat-header {
-    background: #0084ff;
+    background: linear-gradient(135deg, #2f7bff, #2aa5ff);
     color: white;
     padding: 14px;
     font-size: 18px;
@@ -56,6 +55,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-height: 0;
   }
   
   /* MESSAGE BUBBLES */
@@ -77,7 +77,7 @@
   
   .message.other {
     align-self: flex-start;
-    background: #e4e6eb;
+    background: #e8eef7;
     color: #000;
     border-bottom-left-radius: 4px;
   }
@@ -96,7 +96,7 @@
     gap: 8px;
     padding: 10px;
     border-top: 1px solid #ddd;
-    background: #fff;
+    background: #ffffff;
   }
   
   .chat-input input {
@@ -112,7 +112,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #0084ff;
+    background: #2f7bff;
     color: white;
     border: none;
     font-size: 18px;
@@ -120,20 +120,21 @@
   }
   
   .chat-input button:hover {
-    background: #006fd6;
+    background: #1f5fd6;
   }
 
   .logout-btn {
     float: right;
-    background: #e53935;
+    background: #ef4444;
     color: white;
     border: none;
     padding: 6px 12px;
-    border-radius: 12px;
+    border-radius: 999px;
     cursor: pointer;
     font-size: 14px;
   }
   
   .logout-btn:hover {
-    background: #c62828;
+    background: #dc2626;
   }
+  

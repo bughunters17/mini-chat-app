@@ -8,6 +8,10 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    environment:
+      - DB_FILE=/data/chat.db
+    volumes:
+      - chat-data:/data
 
   chat-client:
     build:
@@ -17,3 +21,6 @@ services:
       - "8080:8080"
     depends_on:
       - chat-server
+
+volumes:
+  chat-data:

@@ -12,11 +12,16 @@ if (!token || !username || !chatWithUser) {
 const ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
 const chatEl = document.getElementById('chat');
 const headerEl = document.querySelector('.chat-header');
+let historyLoaded = false;
 
 // Header shows who you are chatting with
 headerEl.innerHTML = `💬 Chat with ${chatWithNickname} <button id="logoutBtn" class="logout-btn">Close</button>`;
 
 // ---------------- WebSocket ----------------
+ws.addEventListener('open', () => {
+    ws.send(JSON.stringify({ type: 'history', with: chatWithUser }));
+});
+
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
@@ -24,6 +29,16 @@ ws.onmessage = (event) => {
         alert(data.message);
         sessionStorage.clear();
         window.location.href = '/dashboard.html';
+        return;
+    }
+
+    if (data.type === 'history' && data.with === chatWithUser && !historyLoaded) {
+        historyLoaded = true;
+        data.messages.forEach((msg) => {
+            const isSelf = msg.sender === username;
+            const displayName = isSelf ? nickname : chatWithNickname;
+            addMessage(displayName, msg.message, isSelf);
+        });
         return;
     }
 

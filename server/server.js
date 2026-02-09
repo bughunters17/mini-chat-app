@@ -55,8 +55,44 @@ const wss = new WebSocket.Server({ server });
 
 // Track online users
 const onlineUsers = new Map(); // username -> ws
+const disconnectTimers = new Map(); // username -> timeout
 
+<<<<<<< HEAD
 // ------------------- Broadcast Online Users -------------------
+=======
+// ------------------- Helpers -------------------
+
+// Prepared statements for SQLite
+const insertMessageStmt = db.prepare(
+    `INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)`
+);
+const historyStmt = db.prepare(
+    `SELECT sender, receiver, message, timestamp FROM messages 
+     WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)
+     ORDER BY timestamp ASC`
+);
+
+// Save message in SQLite
+function saveMessage(sender, receiver, message) {
+    try {
+        insertMessageStmt.run(sender, receiver, message);
+    } catch (err) {
+        console.error('Error saving message:', err);
+    }
+}
+
+// Load chat history between two users
+function loadHistory(user, otherUser) {
+    try {
+        return historyStmt.all(user, otherUser, otherUser, user);
+    } catch (err) {
+        console.error('Error loading history:', err);
+        return [];
+    }
+}
+
+// Broadcast online users with username & nickname
+>>>>>>> 67b6133 (enhance the ui and server connection, created cicd pipeline and improve server response)
 function broadcastOnlineUsers() {
     const usersList = Array.from(onlineUsers.keys()).map(u => ({
         username: u,
@@ -98,58 +134,74 @@ wss.on('connection', (ws, req) => {
     ws.username = payload.username;
     ws.nickname = payload.nickname;
 
+    const pendingTimer = disconnectTimers.get(ws.username);
+    if (pendingTimer) {
+        clearTimeout(pendingTimer);
+        disconnectTimers.delete(ws.username);
+    }
+
+    const existing = onlineUsers.get(ws.username);
+    if (existing && existing !== ws && existing.readyState === WebSocket.OPEN) {
+        existing.close(1000, 'Replaced by new connection');
+    }
     onlineUsers.set(ws.username, ws);
 
     console.log(`✅ ${ws.nickname} connected`);
 
-    // ---------------- SEND RECENT CHATS (DB) ----------------
-    const recent = loadRecentChats(ws.username);
-    ws.send(JSON.stringify({
-        type: 'recent-chats',
-        chats: recent
-    }));
-
-    // ---------------- UPDATE ONLINE USERS ----------------
-    broadcastOnlineUsers();
-
-    // ---------------- HANDLE INCOMING MESSAGES ----------------
-    ws.on('message', (raw) => {
-        let msg;
+    // Handle incoming messages
+    ws.on('message', (rawMsg) => {
+        let msgObj;
+        const msgStr = rawMsg.toString();
         try {
-            msg = JSON.parse(raw);
+            msgObj = JSON.parse(msgStr); // { to, message } or { type: 'history', with: 'user' }
         } catch {
+            msgObj = { message: msgStr }; // fallback plain text
+        }
+
+        if (msgObj.type === 'history' && msgObj.with) {
+            const history = loadHistory(ws.username, msgObj.with);
+            ws.send(JSON.stringify({
+                type: 'history',
+                with: msgObj.with,
+                messages: history
+            }));
             return;
         }
 
-        if (!msg.to || !msg.message) return;
-
-        // Persist message
-        saveMessage(ws.username, msg.to, msg.message);
-
-        // Send to receiver
-        const target = onlineUsers.get(msg.to);
-        if (target && target.readyState === WebSocket.OPEN) {
-            target.send(JSON.stringify({
-                type: 'chat',
-                sender: ws.username,
-                message: msg.message,
-                to: msg.to
-            }));
+        if (msgObj.to) {
+            saveMessage(ws.username, msgObj.to, msgObj.message);
         }
 
-        // Echo back to sender (server-authoritative)
-        ws.send(JSON.stringify({
-            type: 'chat',
-            sender: ws.username,
-            message: msg.message,
-            to: msg.to
-        }));
+        onlineUsers.forEach((client, uname) => {
+            if (client.readyState === WebSocket.OPEN) {
+                // Only send to intended user or self
+                if (!msgObj.to || msgObj.to === uname || uname === ws.username) {
+                    client.send(JSON.stringify({
+                        type: 'chat',
+                        sender: ws.username,
+                        user: ws.nickname,
+                        message: msgObj.message,
+                        to: msgObj.to || null
+                    }));
+                }
+            }
+        });
     });
 
     ws.on('close', () => {
-        onlineUsers.delete(ws.username);
-        broadcastOnlineUsers();
-        console.log(`❌ ${ws.nickname} disconnected`);
+        const current = onlineUsers.get(ws.username);
+        if (current !== ws) return;
+
+        const timer = setTimeout(() => {
+            const latest = onlineUsers.get(ws.username);
+            if (latest === ws) {
+                onlineUsers.delete(ws.username);
+                broadcastOnlineUsers();
+                console.log(`? ${ws.nickname} disconnected`);
+            }
+            disconnectTimers.delete(ws.username);
+        }, 2000);
+        disconnectTimers.set(ws.username, timer);
     });
 });
 
@@ -157,3 +209,4 @@ wss.on('connection', (ws, req) => {
 server.listen(3000, () => {
     console.log('MessenCharles server running on port 3000');
 });
+
