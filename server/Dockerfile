@@ -1,19 +1,16 @@
-FROM node:18-alpine
+FROM node:20-slim
 
-# Set working directory
+ENV NODE_ENV=production
 WORKDIR /app
 
-# Copy server package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && npm install --omit=dev --no-audit --no-fund \
+ && rm -rf /var/lib/apt/lists/*
 
-# Copy server source
 COPY . .
 
-# Expose WebSocket + API port
 EXPOSE 3000
-
-# Start server
 CMD ["npm", "start"]

@@ -14,11 +14,16 @@ if (!token || !username || !chatWithUser) {
 const ws = createSocket(token);
 const chatEl = document.getElementById('chat');
 const headerEl = document.querySelector('.chat-header');
+let historyLoaded = false;
 
 // Header shows who you are chatting with
 headerEl.innerHTML = `💬 Chat with ${chatWithNickname} <button id="logoutBtn" class="logout-btn">Close</button>`;
 
 // ---------------- WebSocket ----------------
+ws.addEventListener('open', () => {
+    ws.send(JSON.stringify({ type: 'history', with: chatWithUser }));
+});
+
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
