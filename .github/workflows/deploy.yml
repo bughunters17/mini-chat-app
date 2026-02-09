@@ -13,16 +13,19 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add server to known_hosts
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          PORT=${SSH_PORT:-22}
-          ssh-keyscan -p "$PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${SSH_PORT:-22} $SSH_HOST >> ~/.ssh/known_hosts
 
       - name: Sync project to server
         run: |
@@ -38,4 +41,12 @@ jobs:
       - name: Deploy with Docker Compose
         run: |
           PORT=${SSH_PORT:-22}
-          ssh -p "$PORT" "$SSH_USER@$SSH_HOST" "cd '$REMOTE_PATH' && if command -v docker-compose >/dev/null 2>&1; then COMPOSE='docker-compose'; else COMPOSE='docker compose'; fi; \$COMPOSE up -d --build"
+          ssh -p "$PORT" "$SSH_USER@$SSH_HOST" "
+            cd '$REMOTE_PATH' &&
+            if command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE='docker-compose'
+            else
+              COMPOSE='docker compose'
+            fi &&
+            \$COMPOSE up -d --build
+          "
