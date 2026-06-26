@@ -6,7 +6,7 @@ services:
       context: ./server
     container_name: messencharles-server
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     restart: unless-stopped
     environment:
       - DB_FILE=/data/chat.db
@@ -18,9 +18,17 @@ services:
       context: ./client
     container_name: messencharles-client
     ports:
-      - "8080:8080"
+      - "127.0.0.1:3001:8080"
     depends_on:
       - chat-server
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: messencharles-cloudflared
+    command: tunnel --no-autoupdate --url http://chat-client:8080
+    depends_on:
+      - chat-client
+    restart: unless-stopped
 
 volumes:
   chat-data:

@@ -1,32 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>MessenCharles Dashboard</title>
-        <link rel="stylesheet" href="/css/theme.css" />
-        <link rel="stylesheet" href="css/dashboard.css" />
-    </head>
-    <body>
-        <div class="dashboard-container">
-            <header>
-                💬 MessenCharles
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </header>
-
-            <div class="dashboard-main">
-                <section class="online-users-section">
-                    <h2>Online Users</h2>
-                    <div id="online-users"></div>
-                </section>
-
-                <section class="recent-chats-section">
-                    <h2>Recent Chats</h2>
-                    <div id="recent-chats"></div>
-                </section>
-            </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MessenCharles Dashboard</title>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <main class="app-stage">
+    <section class="liquid-window dashboard-window dashboard-container">
+      <header class="window-toolbar">
+        <div class="window-chrome" aria-hidden="true">
+          <span class="window-dot close"></span>
+          <span class="window-dot minimize"></span>
+          <span class="window-dot maximize"></span>
         </div>
-        <script type="module" src="./js/dashboard.js"></script>
-    </body>
-</html>
+        <div class="window-title-group">
+          <p class="window-title">MessenCharles</p>
+          <p class="window-subtitle">Choose a user and keep the conversation in this session</p>
+        </div>
+        <div class="toolbar-actions">
+          <a id="admin-link" class="logout-btn admin-link" href="admin.html" hidden>Admin</a>
+          <button id="logout-btn" class="logout-btn" type="button">Logout</button>
+        </div>
+      </header>
 
+      <div class="dashboard-main">
+        <section class="liquid-panel dashboard-section users-section">
+          <div class="section-heading">
+            <h2>Users</h2>
+            <span>Presence</span>
+          </div>
+          <div id="online-users" class="user-list"></div>
+          <p class="empty-state dashboard-empty" id="online-empty">No other users are available.</p>
+        </section>
+
+        <section class="liquid-panel dashboard-section session-section">
+          <div class="section-heading session-heading">
+            <div>
+              <h2 id="session-title">Conversation</h2>
+              <p id="session-subtitle">Select a user to view history and start chatting.</p>
+            </div>
+            <span id="session-status">Session</span>
+          </div>
+
+          <div class="session-chat">
+            <div class="session-empty" id="session-empty">Your selected conversation will open here.</div>
+            <div class="session-messages" id="session-messages" aria-live="polite"></div>
+          </div>
+
+          <div class="typing-indicator" id="typing-indicator" hidden>
+            <span id="typing-label"></span>
+            <span class="typing-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </div>
+
+          <form class="session-input" id="session-form">
+            <input id="session-message" autocomplete="off" placeholder="Select a user first..." disabled />
+            <button id="session-send" type="submit" aria-label="Send message">&gt;</button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/dashboard.js"></script>
+</body>
+</html>

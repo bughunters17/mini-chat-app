@@ -1,30 +1,86 @@
 const db = require('./db');
 
-/* Save message */
+function mapMessage(row) {
+    if (!row) return null;
+
+    return {
+        id: row.id,
+        sender: row.sender,
+        receiver: row.receiver,
+        message: row.message,
+        timestamp: row.timestamp,
+        edited_at: row.edited_at || null
+    };
+}
+
+function getMessageById(id) {
+    const row = db.prepare(`
+        SELECT id, sender, receiver, message, timestamp, edited_at, deleted_at
+        FROM messages
+        WHERE id = ?
+    `).get(id);
+
+    return row || null;
+}
+
 function saveMessage(sender, receiver, message) {
     const stmt = db.prepare(`
         INSERT INTO messages (sender, receiver, message)
         VALUES (?, ?, ?)
     `);
-    stmt.run(sender, receiver, message);
+    const result = stmt.run(sender, receiver, message);
+
+    return mapMessage(getMessageById(result.lastInsertRowid));
 }
 
-/* Load conversation history (A <-> B) */
 function loadConversation(userA, userB) {
     const stmt = db.prepare(`
-        SELECT sender, receiver, message, timestamp
+        SELECT id, sender, receiver, message, timestamp, edited_at
         FROM messages
-        WHERE
+        WHERE deleted_at IS NULL
+          AND (
             (sender = ? AND receiver = ?)
-        OR
+            OR
             (sender = ? AND receiver = ?)
-        ORDER BY timestamp ASC
+          )
+        ORDER BY timestamp ASC, id ASC
     `);
 
-    return stmt.all(userA, userB, userB, userA);
+    return stmt.all(userA, userB, userB, userA).map(mapMessage);
 }
 
-/* Load recent chats for dashboard */
+function updateMessage({ id, sender, message }) {
+    const existing = getMessageById(id);
+
+    if (!existing || existing.deleted_at || existing.sender !== sender) {
+        return null;
+    }
+
+    db.prepare(`
+        UPDATE messages
+        SET message = ?, edited_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND sender = ? AND deleted_at IS NULL
+    `).run(message, id, sender);
+
+    return mapMessage(getMessageById(id));
+}
+
+function softDeleteMessage({ id, sender }) {
+    const existing = getMessageById(id);
+
+    if (!existing || existing.deleted_at || existing.sender !== sender) {
+        return null;
+    }
+
+    db.prepare(`
+        UPDATE messages
+        SET deleted_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND sender = ? AND deleted_at IS NULL
+    `).run(id, sender);
+
+    return mapMessage(existing);
+}
+
 function loadRecentChats(username) {
     const stmt = db.prepare(`
         SELECT
@@ -35,7 +91,8 @@ function loadRecentChats(username) {
             message,
             MAX(timestamp) AS lastTime
         FROM messages
-        WHERE sender = ? OR receiver = ?
+        WHERE deleted_at IS NULL
+          AND (sender = ? OR receiver = ?)
         GROUP BY chatUser
         ORDER BY lastTime DESC
     `);
@@ -46,5 +103,7 @@ function loadRecentChats(username) {
 module.exports = {
     saveMessage,
     loadConversation,
-    loadRecentChats
+    loadRecentChats,
+    updateMessage,
+    softDeleteMessage
 };

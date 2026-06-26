@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MessenCharles Register</title>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+  <main class="login-stage">
+    <section class="liquid-panel login-screen" aria-labelledby="register-title">
+      <div class="login-card-header">
+        <span class="app-mark" aria-hidden="true">M</span>
+        <div>
+          <h2 id="register-title">Create Account</h2>
+          <p>Register a MessenCharles user</p>
+        </div>
+      </div>
+
+      <div class="login-form">
+        <label for="nickname">
+          Nickname
+          <input id="nickname" autocomplete="name" placeholder="Display name" />
+        </label>
+        <label for="username">
+          Username
+          <input id="username" autocomplete="username" placeholder="letters, numbers, underscore" />
+        </label>
+        <label for="password">
+          Password
+          <input id="password" type="password" autocomplete="new-password" placeholder="At least 4 characters" />
+        </label>
+        <button id="register-btn" class="login-btn" type="button">Create Account</button>
+        <a class="auth-link" href="login.html">Back to login</a>
+        <p class="error" id="error" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { register } from './js/register.js';
+
+    const registerButton = document.getElementById('register-btn');
+    const passwordInput = document.getElementById('password');
+
+    registerButton.addEventListener('click', register);
+    passwordInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') register();
+    });
+  </script>
+</body>
+</html>

@@ -9,60 +9,264 @@ const cors = require('cors');
 
 const {
     saveMessage,
-    loadConversation
+    loadConversation,
+    updateMessage,
+    softDeleteMessage
 } = require('./messageRepo');
+const {
+    approveUser,
+    createUser,
+    deleteNormalUser,
+    findUserByUsername,
+    listUsers,
+    listUsersForAdmin,
+    normalizeNickname,
+    normalizeUsername,
+    rejectUser
+} = require('./userRepo');
 
 const SECRET_KEY = 'MessenCharlesSecretKey';
 
-// ------------------- USERS (TEMP / WILL MOVE TO DB) -------------------
-const users = {
-    crz: { password: bcrypt.hashSync('1234', 10), nickname: 'Charles' },
-    kmz: { password: bcrypt.hashSync('4321', 10), nickname: 'Karen' }
-};
-
-// ------------------- EXPRESS LOGIN -------------------
 const app = express();
 
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(bodyParser.json());
 
+function validateCredentialsInput({ username, password }) {
+    const normalizedUsername = normalizeUsername(username);
+
+    if (!normalizedUsername || !password) {
+        return { message: 'Username and password are required' };
+    }
+
+    if (!/^[a-z0-9_]{3,32}$/.test(normalizedUsername)) {
+        return { message: 'Username must be 3-32 characters and use only letters, numbers, or underscore' };
+    }
+
+    return null;
+}
+
+function signUserToken(user) {
+    return jwt.sign(
+        {
+            username: user.username,
+            nickname: user.nickname,
+            role: user.role || 'user',
+            status: user.status || 'active'
+        },
+        SECRET_KEY,
+        { expiresIn: '2h' }
+    );
+}
+
+function publicUser(user) {
+    return {
+        username: user.username,
+        nickname: user.nickname,
+        role: user.role || 'user',
+        status: user.status || 'active',
+        created_at: user.created_at || null,
+        approved_by: user.approved_by || null,
+        approved_at: user.approved_at || null,
+        rejected_at: user.rejected_at || null,
+        deleted_at: user.deleted_at || null,
+        hard_deleted: !!user.hard_deleted,
+        messages_deleted: user.messages_deleted || 0
+    };
+}
+
+function authenticateHttp(req, res, next) {
+    const header = req.get('authorization') || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+
+    if (!token) {
+        return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    try {
+        const payload = jwt.verify(token, SECRET_KEY);
+        const user = findUserByUsername(payload.username);
+
+        if (!user || user.status !== 'active') {
+            return res.status(403).json({ message: 'Account is not active' });
+        }
+
+        req.user = user;
+        return next();
+    } catch {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+}
+
+function requireAdmin(req, res, next) {
+    if ((req.user.role || 'user') !== 'admin') {
+        return res.status(403).json({ message: 'Administrator access is required' });
+    }
+
+    return next();
+}
+
+app.post('/register', (req, res) => {
+    const { username, nickname, password } = req.body;
+    const validationError = validateCredentialsInput({ username, password });
+    const normalizedUsername = normalizeUsername(username);
+    const normalizedNickname = normalizeNickname(nickname);
+
+    if (validationError) {
+        return res.status(422).json({ message: validationError.message });
+    }
+
+    if (!normalizedNickname || normalizedNickname.length < 2 || normalizedNickname.length > 40) {
+        return res.status(422).json({ message: 'Nickname must be 2-40 characters' });
+    }
+
+    if (String(password).length < 4) {
+        return res.status(422).json({ message: 'Password must be at least 4 characters' });
+    }
+
+    if (findUserByUsername(normalizedUsername)) {
+        return res.status(409).json({ message: 'Username is already taken' });
+    }
+
+    const user = createUser({
+        username: normalizedUsername,
+        nickname: normalizedNickname,
+        password
+    });
+
+    res.status(201).json({
+        message: 'Registration submitted. Wait for administrator approval before logging in.',
+        user: {
+            username: user.username,
+            nickname: user.nickname,
+            status: user.status
+        }
+    });
+});
+
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    const user = users[username];
+    const validationError = validateCredentialsInput({ username, password });
+
+    if (validationError) {
+        return res.status(422).json({ message: validationError.message });
+    }
+
+    const user = findUserByUsername(username);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
         return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    const token = jwt.sign(
-        { username, nickname: user.nickname },
-        SECRET_KEY,
-        { expiresIn: '2h' }
-    );
+    if (user.status === 'pending') {
+        return res.status(403).json({ message: 'Account is pending administrator approval' });
+    }
 
-    res.json({ token, nickname: user.nickname });
+    if (user.status === 'rejected') {
+        return res.status(403).json({ message: 'Account was rejected by administrator' });
+    }
+
+    if (user.status === 'deleted') {
+        return res.status(403).json({ message: 'Account was deleted by administrator' });
+    }
+
+    if (user.status !== 'active') {
+        return res.status(403).json({ message: 'Account is not active' });
+    }
+
+    const token = signUserToken(user);
+
+    res.json({
+        token,
+        nickname: user.nickname,
+        role: user.role || 'user',
+        status: user.status || 'active'
+    });
 });
 
-// ------------------- WEBSOCKET SERVER -------------------
+app.get('/admin/users', authenticateHttp, requireAdmin, (req, res) => {
+    res.json({ users: listUsersForAdmin() });
+});
+
+app.post('/admin/users/:username/approve', authenticateHttp, requireAdmin, (req, res) => {
+    const user = approveUser(req.params.username, req.user.username);
+
+    if (!user) {
+        return res.status(422).json({ message: 'Unable to approve this user' });
+    }
+
+    broadcastOnlineUsers();
+    res.json({ user: publicUser(user) });
+});
+
+app.post('/admin/users/:username/reject', authenticateHttp, requireAdmin, (req, res) => {
+    const user = rejectUser(req.params.username, req.user.username);
+
+    if (!user) {
+        return res.status(422).json({ message: 'Unable to reject this user' });
+    }
+
+    broadcastOnlineUsers();
+    res.json({ user: publicUser(user) });
+});
+
+app.post('/admin/users/:username/delete', authenticateHttp, requireAdmin, (req, res) => {
+    const user = deleteNormalUser(req.params.username, req.user.username);
+
+    if (!user) {
+        return res.status(422).json({ message: 'Unable to delete this account' });
+    }
+
+    forceDisconnectUser(user.username);
+    broadcastOnlineUsers();
+    res.json({ user: publicUser(user) });
+});
+
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Track online users
-const onlineUsers = new Map(); // username -> ws
-const disconnectTimers = new Map(); // username -> timeout
+const onlineUsers = new Map();
+const disconnectTimers = new Map();
 
-// ------------------- Helpers -------------------
+function forceDisconnectUser(username) {
+    const client = onlineUsers.get(username);
+    if (client && client.readyState === WebSocket.OPEN) {
+        client.close(1008, 'Account deleted');
+    }
+    onlineUsers.delete(username);
 
-// Broadcast online users with username & nickname
+    const timer = disconnectTimers.get(username);
+    if (timer) {
+        clearTimeout(timer);
+        disconnectTimers.delete(username);
+    }
+}
+
+function sendToUser(username, payload) {
+    const client = onlineUsers.get(username);
+
+    if (client && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(payload));
+    }
+}
+
+function sendToConversationUsers(message, payload) {
+    sendToUser(message.sender, payload);
+    if (message.receiver !== message.sender) {
+        sendToUser(message.receiver, payload);
+    }
+}
+
 function broadcastOnlineUsers() {
-    const usersList = Array.from(onlineUsers.keys()).map(u => ({
-        username: u,
-        nickname: users[u]?.nickname || u
+    const usersList = listUsers().map(user => ({
+        username: user.username,
+        nickname: user.nickname || user.username,
+        online: onlineUsers.has(user.username)
     }));
 
     const msg = JSON.stringify({
@@ -77,10 +281,9 @@ function broadcastOnlineUsers() {
     });
 }
 
-// ------------------- WebSocket Connection -------------------
 wss.on('connection', (ws, req) => {
-    const params = new URLSearchParams(req.url.replace('/?', ''));
-    const token = params.get('token');
+    const requestUrl = new URL(req.url, 'http://localhost');
+    const token = requestUrl.searchParams.get('token');
 
     if (!token) {
         ws.send(JSON.stringify({ type: 'error', message: 'Authentication required' }));
@@ -89,16 +292,24 @@ wss.on('connection', (ws, req) => {
     }
 
     let payload;
+    let user;
     try {
         payload = jwt.verify(token, SECRET_KEY);
+        user = findUserByUsername(payload.username);
     } catch {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
         ws.close();
         return;
     }
 
-    ws.username = payload.username;
-    ws.nickname = payload.nickname;
+    if (!user || user.status !== 'active') {
+        ws.send(JSON.stringify({ type: 'error', message: 'Account is not active' }));
+        ws.close();
+        return;
+    }
+
+    ws.username = user.username;
+    ws.nickname = user.nickname;
 
     const pendingTimer = disconnectTimers.get(ws.username);
     if (pendingTimer) {
@@ -111,20 +322,26 @@ wss.on('connection', (ws, req) => {
         existing.close(1000, 'Replaced by new connection');
     }
     onlineUsers.set(ws.username, ws);
+    broadcastOnlineUsers();
 
-    console.log(`✅ ${ws.nickname} connected`);
+    console.log(ws.nickname + ' connected');
 
-    // Handle incoming messages
     ws.on('message', (rawMsg) => {
         let msgObj;
         const msgStr = rawMsg.toString();
         try {
-            msgObj = JSON.parse(msgStr); // { to, message } or { type: 'history', with: 'user' }
+            msgObj = JSON.parse(msgStr);
         } catch {
-            msgObj = { message: msgStr }; // fallback plain text
+            msgObj = { message: msgStr };
         }
 
         if (msgObj.type === 'history' && msgObj.with) {
+            const otherUser = findUserByUsername(msgObj.with);
+            if (!otherUser || otherUser.status !== 'active') {
+                ws.send(JSON.stringify({ type: 'error', message: 'User is not available' }));
+                return;
+            }
+
             const history = loadConversation(ws.username, msgObj.with);
             ws.send(JSON.stringify({
                 type: 'history',
@@ -134,24 +351,89 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
-        if (msgObj.to) {
-            saveMessage(ws.username, msgObj.to, msgObj.message);
+        if ((msgObj.type === 'typing' || msgObj.type === 'stop-typing') && msgObj.to) {
+            sendToUser(msgObj.to, {
+                type: msgObj.type,
+                sender: ws.username,
+                user: ws.nickname,
+                to: msgObj.to
+            });
+            return;
         }
 
-        onlineUsers.forEach((client, uname) => {
-            if (client.readyState === WebSocket.OPEN) {
-                // Only send to intended user or self
-                if (!msgObj.to || msgObj.to === uname || uname === ws.username) {
-                    client.send(JSON.stringify({
-                        type: 'chat',
-                        sender: ws.username,
-                        user: ws.nickname,
-                        message: msgObj.message,
-                        to: msgObj.to || null
-                    }));
-                }
+        if (msgObj.type === 'edit-message') {
+            const text = String(msgObj.message || '').trim();
+            if (!text) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Message cannot be empty' }));
+                return;
             }
-        });
+
+            const message = updateMessage({
+                id: Number(msgObj.id),
+                sender: ws.username,
+                message: text
+            });
+
+            if (!message) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Unable to edit this message' }));
+                return;
+            }
+
+            sendToConversationUsers(message, {
+                type: 'message-edited',
+                id: message.id,
+                sender: message.sender,
+                receiver: message.receiver,
+                message: message.message,
+                edited_at: message.edited_at
+            });
+            return;
+        }
+
+        if (msgObj.type === 'delete-message') {
+            const message = softDeleteMessage({
+                id: Number(msgObj.id),
+                sender: ws.username
+            });
+
+            if (!message) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Unable to delete this message' }));
+                return;
+            }
+
+            sendToConversationUsers(message, {
+                type: 'message-deleted',
+                id: message.id,
+                sender: message.sender,
+                receiver: message.receiver
+            });
+            return;
+        }
+
+        if (msgObj.to) {
+            const recipient = findUserByUsername(msgObj.to);
+            const text = String(msgObj.message || '').trim();
+
+            if (!text) return;
+
+            if (!recipient || recipient.status !== 'active') {
+                ws.send(JSON.stringify({ type: 'error', message: 'User is not available' }));
+                return;
+            }
+
+            const message = saveMessage(ws.username, msgObj.to, text);
+            sendToConversationUsers(message, {
+                type: 'chat',
+                id: message.id,
+                sender: message.sender,
+                user: ws.nickname,
+                receiver: message.receiver,
+                message: message.message,
+                timestamp: message.timestamp,
+                edited_at: message.edited_at,
+                to: message.receiver
+            });
+        }
     });
 
     ws.on('close', () => {
@@ -163,7 +445,7 @@ wss.on('connection', (ws, req) => {
             if (latest === ws) {
                 onlineUsers.delete(ws.username);
                 broadcastOnlineUsers();
-                console.log(`? ${ws.nickname} disconnected`);
+                console.log(ws.nickname + ' disconnected');
             }
             disconnectTimers.delete(ws.username);
         }, 2000);
@@ -171,8 +453,6 @@ wss.on('connection', (ws, req) => {
     });
 });
 
-// ------------------- SERVER START -------------------
 server.listen(3000, () => {
     console.log('MessenCharles server running on port 3000');
 });
-

@@ -1,20 +1,52 @@
-:root {
+﻿:root {
   --bg-image: url('/images/network.jpg');
-  --bg-overlay: rgba(8, 12, 20, 0.6);
-  --brand: #2f7bff;
-  --brand-dark: #1f5fd6;
-  --card-bg: rgba(255, 255, 255, 0.95);
-  --card-border: rgba(255, 255, 255, 0.35);
-  --text-main: #0f172a;
-  --text-muted: #475569;
+  --bg-base: #0b1020;
+  --bg-overlay: rgba(6, 10, 18, 0.52);
+  --text-main: #111827;
+  --text-muted: #64748b;
+  --text-soft: #94a3b8;
+  --text-inverse: #f8fafc;
+  --brand: #3478f6;
+  --brand-strong: #1d4ed8;
+  --accent: #14b8a6;
+  --danger: #ff453a;
+  --warning: #ffcc00;
+  --success: #30d158;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgba(255, 255, 255, 0.88);
+  --surface-soft: rgba(255, 255, 255, 0.48);
+  --surface-dark: rgba(15, 23, 42, 0.58);
+  --border: rgba(255, 255, 255, 0.46);
+  --border-subtle: rgba(148, 163, 184, 0.22);
+  --shadow-window: 0 28px 80px rgba(2, 6, 23, 0.42);
+  --shadow-control: 0 12px 30px rgba(15, 23, 42, 0.18);
+  --radius-window: 28px;
+  --radius-panel: 18px;
+  --radius-control: 14px;
+  --toolbar-height: 64px;
+  --content-width: 1120px;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   min-height: 100svh;
-  background: #0b1020 var(--bg-image) center/cover no-repeat;
-  font-family: 'Trebuchet MS', 'Gill Sans', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(20, 184, 166, 0.30), transparent 26rem),
+    radial-gradient(circle at 84% 12%, rgba(52, 120, 246, 0.28), transparent 24rem),
+    linear-gradient(135deg, rgba(10, 15, 28, 0.38), rgba(17, 24, 39, 0.68)),
+    var(--bg-base) var(--bg-image) center/cover no-repeat fixed;
   color: var(--text-main);
+  font-family: var(--font-ui);
+  letter-spacing: 0;
   position: relative;
 }
 
@@ -37,37 +69,197 @@ a {
 }
 
 button,
+input {
+  font: inherit;
+}
+
+button,
 .primary-btn,
 .login-btn,
 .logout-btn,
 .closeBtn-btn {
-  border-radius: 999px;
   border: none;
-  font-weight: 600;
-  font-family: inherit;
-  letter-spacing: 0.2px;
   cursor: pointer;
+  letter-spacing: 0;
 }
 
 button:focus-visible,
+a:focus-visible,
+input:focus-visible,
 .primary-btn:focus-visible,
 .login-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
-  outline-offset: 2px;
+  outline: 3px solid rgba(52, 120, 246, 0.35);
+  outline-offset: 3px;
+}
+
+.app-stage {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.liquid-window {
+  width: min(100%, var(--content-width));
+  min-height: min(760px, calc(100svh - 56px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-window);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58));
+  box-shadow: var(--shadow-window);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+
+.window-toolbar {
+  min-height: var(--toolbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.44);
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.window-chrome {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.window-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+.window-dot.close { background: var(--danger); }
+.window-dot.minimize { background: var(--warning); }
+.window-dot.maximize { background: var(--success); }
+
+.window-title-group {
+  min-width: 0;
+  flex: 1;
+}
+
+.window-title,
+.chat-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.window-subtitle,
+.chat-subtitle {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .primary-btn,
-.login-btn {
-  background: linear-gradient(135deg, var(--brand), #4aa3ff);
-  color: #ffffff;
-  text-decoration: none;
+.login-btn,
+.liquid-btn {
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 14px 28px rgba(52, 120, 246, 0.28);
 }
 
 .primary-btn:hover,
-.login-btn:hover {
-  filter: brightness(0.95);
+.login-btn:hover,
+.liquid-btn:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
+.icon-btn,
+.logout-btn {
+  min-width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.logout-btn {
+  padding: 0 14px;
+}
+
+.icon-btn:hover,
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.liquid-panel {
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  border-radius: var(--radius-panel);
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 14px 38px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(20px) saturate(145%);
+  -webkit-backdrop-filter: blur(20px) saturate(145%);
+}
+
+.app-mark {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(52, 120, 246, 0.98), rgba(20, 184, 166, 0.95));
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 14px 28px rgba(20, 184, 166, 0.22);
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .app-stage {
+    padding: 0;
+  }
+
+  .liquid-window {
+    width: 100%;
+    min-height: 100svh;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .window-toolbar {
+    padding: 12px 14px;
+  }
+
+  .window-chrome {
+    display: none;
+  }
 }

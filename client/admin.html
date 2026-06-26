@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MessenCharles Admin</title>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <main class="app-stage">
+    <section class="liquid-window dashboard-window admin-window">
+      <header class="window-toolbar">
+        <div class="window-chrome" aria-hidden="true">
+          <span class="window-dot close"></span>
+          <span class="window-dot minimize"></span>
+          <span class="window-dot maximize"></span>
+        </div>
+        <div class="window-title-group">
+          <p class="window-title">Administrator Dashboard</p>
+          <p class="window-subtitle">Monitor users and approve new registrations</p>
+        </div>
+        <div class="toolbar-actions">
+          <a class="logout-btn" href="dashboard.html">Chat</a>
+          <button id="logout-btn" class="logout-btn" type="button">Logout</button>
+        </div>
+      </header>
+
+      <div class="admin-main">
+        <section class="liquid-panel admin-panel">
+          <div class="section-heading">
+            <div>
+              <h2>Users</h2>
+              <p id="admin-summary">Loading users...</p>
+            </div>
+            <span>Approval</span>
+          </div>
+          <div id="admin-users" class="admin-users"></div>
+          <p id="admin-empty" class="empty-state dashboard-empty" hidden>No users found.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/admin.js?v=hard-delete-20260627"></script>
+</body>
+</html>

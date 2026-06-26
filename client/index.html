@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,34 +8,63 @@
   <link rel="stylesheet" href="/css/landingpage.css" />
 </head>
 <body class="landing">
+  <main class="app-stage">
+    <section class="liquid-window landing-window">
+      <div class="window-toolbar">
+        <div class="window-chrome" aria-hidden="true">
+          <span class="window-dot close"></span>
+          <span class="window-dot minimize"></span>
+          <span class="window-dot maximize"></span>
+        </div>
+        <div class="window-title-group">
+          <p class="window-title">MessenCharles</p>
+          <p class="window-subtitle">Private real-time workspace chat</p>
+        </div>
+        <a class="primary-btn" href="login.html">Login</a>
+      </div>
 
-  <div class="landing-container">
-    <h1>💬 MessenCharles</h1>
-    <p class="tagline">
-      A simple, secure, real-time chat app built for people you actually know.
-    </p>
-    <p class="subtitle">
-      A lightweight, real-time chat app built with WebSockets & JWT security.
-    </p>
-    <p class="description">
-      Secure. Fast. Simple.  
-      Chat in real time with authenticated users — no noise, no clutter.
-    </p>
+      <div class="landing-content">
+        <div class="landing-copy">
+          <h1>MessenCharles</h1>
+          <p class="tagline">A focused chat workspace for authenticated users, recent conversations, and fast private messaging.</p>
+          <p class="subtitle">Built with WebSockets, JWT sessions, Docker deployment, and a lightweight static client.</p>
+          <p class="description">The interface is now ready for a macOS-style liquid app experience without changing the current backend flow.</p>
 
-    <div class="features">
-      <p>🔐 Authenticated users only</p>
-      <p>⚡ Real-time WebSocket messaging</p>
-      <p>🧾 Nicknames, not random names</p>
-      <p>🐳 Docker-powered deployment</p>
-    </div>
+          <div class="features">
+            <p class="liquid-panel">Authenticated users only</p>
+            <p class="liquid-panel">Real-time private messaging</p>
+            <p class="liquid-panel">Nickname-based chat identity</p>
+            <p class="liquid-panel">Docker-powered deployment</p>
+          </div>
 
-    <a class="primary-btn" href="login.html">Login to Chat</a>
-  </div>
-  <script src="./js/script.js"></script>
-  <script>
-    function goToLogin() {
-      window.location.href = 'login.html'
-    }
-  </script>
+          <div class="landing-actions">
+            <a class="primary-btn" href="login.html">Open Chat</a>
+            <a class="secondary-btn" href="register.html">Create Account</a>
+          </div>
+        </div>
+
+        <aside class="liquid-panel preview-shell" aria-label="Chat preview">
+          <div class="preview-toolbar">
+            <span>Live Preview</span>
+            <span>Online</span>
+          </div>
+          <div class="preview-list">
+            <div class="preview-message">
+              <small>Charles</small>
+              The dashboard is open. Pick a user and start a private chat.
+            </div>
+            <div class="preview-message self">
+              <small>You</small>
+              Clean, focused, and ready for daily use.
+            </div>
+            <div class="preview-message">
+              <small>Charles</small>
+              The interface feels like a desktop app now.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
 </body>
 </html>

@@ -1,7 +1,13 @@
-async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+import { API_BASE_URL } from './config.js';
+
+export async function login() {
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
     const error = document.getElementById('error');
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    error.textContent = '';
 
     if (!username || !password) {
         error.textContent = 'Please enter username and password';
@@ -9,31 +15,24 @@ async function login() {
     }
 
     try {
-        const res = await fetch(
-            window.location.hostname === 'localhost'
-                ? 'http://localhost:3000/login'
-                : 'https://mini-chat-app-server.onrender.com/login',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            }
-        );
+        const res = await fetch(API_BASE_URL + '/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
+        if (!res.ok) throw new Error(data.message || 'Login failed');
 
-        // Decode JWT payload
         const payload = JSON.parse(atob(data.token.split('.')[1]));
 
-        // Persist session
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('auth_user', payload.username);
         sessionStorage.setItem('auth_nickname', payload.nickname);
+        sessionStorage.setItem('auth_role', payload.role || data.role || 'user');
+        sessionStorage.setItem('auth_status', payload.status || data.status || 'active');
 
-        // Redirect AFTER auth
         window.location.href = 'dashboard.html';
-
     } catch (err) {
         error.textContent = err.message;
     }

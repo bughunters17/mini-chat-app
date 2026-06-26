@@ -1,29 +1,46 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MessenCharles</title>
+  <title>MessenCharles Chat</title>
   <link rel="stylesheet" href="/css/theme.css" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
+  <main class="app-stage">
+    <section class="liquid-window chat-app">
+      <header class="chat-header">
+        <div class="window-chrome" aria-hidden="true">
+          <span class="window-dot close"></span>
+          <span class="window-dot minimize"></span>
+          <span class="window-dot maximize"></span>
+        </div>
+        <div class="chat-recipient">
+          <p class="chat-title">MessenCharles</p>
+          <p class="chat-subtitle">Private conversation</p>
+        </div>
+        <button id="logoutBtn" class="logout-btn" type="button">Close</button>
+      </header>
 
-<div class="chat-app">
-  <header class="chat-header">
-    💬 MessenCharles
-    <button id="logoutBtn" class="logout-btn">X</button>
-  </header>
+      <div class="chat-messages" id="chat" aria-live="polite"></div>
 
-  <div class="chat-messages" id="chat"></div>
+      <div class="typing-indicator" id="typing-indicator" hidden>
+        <span id="typing-label"></span>
+        <span class="typing-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </div>
 
-  <div class="chat-input">
-    <input id="message" placeholder="Type a message..." />
-    <button onclick="sendMessage()">➤</button>
-  </div>
-</div>
+      <form class="chat-input" id="chat-form">
+        <input id="message" autocomplete="off" placeholder="Type a message..." />
+        <button id="send-btn" type="submit" aria-label="Send message">&gt;</button>
+      </form>
+    </section>
+  </main>
 
-<script type="module" src="./js/chat.js"></script>
+  <script type="module" src="./js/chat.js"></script>
 </body>
 </html>
-

@@ -1,30 +1,49 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MessenCharles – Login</title>
+  <title>MessenCharles Login</title>
   <link rel="stylesheet" href="/css/theme.css" />
   <link rel="stylesheet" href="/css/login.css" />
-  <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
+  <main class="login-stage">
+    <section class="liquid-panel login-screen" aria-labelledby="login-title">
+      <div class="login-card-header">
+        <span class="app-mark" aria-hidden="true">M</span>
+        <div>
+          <h2 id="login-title">MessenCharles</h2>
+          <p>Private chat sign in</p>
+        </div>
+      </div>
 
-  <div class="login-screen">
-    <h2>💬 MessenCharles</h2>
-    <p>Private Chat</p>
+      <div class="login-form">
+        <label for="username">
+          Username
+          <input id="username" autocomplete="username" placeholder="Enter username" />
+        </label>
+        <label for="password">
+          Password
+          <input id="password" type="password" autocomplete="current-password" placeholder="Enter password" />
+        </label>
+        <button id="login-btn" class="login-btn" type="button">Login</button>
+        <a class="auth-link" href="register.html">Create a new account</a>
+        <p class="error" id="error" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
 
-    <input id="username" placeholder="Username" />
-    <input id="password" type="password" placeholder="Password" />
-    <button id="login-btn">Login</button>
+  <script type="module">
+    import { login } from './js/login.js';
 
-    <p class="error" id="error"></p>
-  </div>
+    const loginButton = document.getElementById('login-btn');
+    const passwordInput = document.getElementById('password');
 
-<script type="module">
-  import { login } from './js/login.js';
-  document.getElementById('login-btn').addEventListener('click', login);
-</script>
+    loginButton.addEventListener('click', login);
+    passwordInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') login();
+    });
+  </script>
 </body>
 </html>
-
