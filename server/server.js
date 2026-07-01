@@ -14,6 +14,17 @@ const {
     softDeleteMessage
 } = require('./messageRepo');
 const {
+    createGroup,
+    listGroupsForUser,
+    listGroupMemberUsernames,
+    loadGroupMessages,
+    saveGroupMessage,
+    setGroupHidden,
+    hardDeleteGroup,
+    updateGroupMessage,
+    softDeleteGroupMessage
+} = require('./groupRepo');
+const {
     approveUser,
     createUser,
     deleteNormalUser,
@@ -227,6 +238,82 @@ app.post('/admin/users/:username/delete', authenticateHttp, requireAdmin, (req, 
     res.json({ user: publicUser(user) });
 });
 
+app.get('/groups', authenticateHttp, (req, res) => {
+    res.json({
+        groups: listGroupsForUser(req.user.username),
+        hidden_groups: listGroupsForUser(req.user.username, { hiddenOnly: true })
+    });
+});
+
+app.post('/groups', authenticateHttp, (req, res) => {
+    const result = createGroup({
+        name: req.body.name,
+        createdBy: req.user.username,
+        members: req.body.members
+    });
+
+    if (result.error) {
+        return res.status(422).json({ message: result.error });
+    }
+
+    result.members.forEach(sendGroupsToUser);
+    res.status(201).json({ group: result.group, members: result.members });
+});
+
+app.post('/groups/:groupId/hide', authenticateHttp, (req, res) => {
+    const group = setGroupHidden({
+        groupId: Number(req.params.groupId),
+        username: req.user.username,
+        hidden: true
+    });
+
+    if (!group) {
+        return res.status(404).json({ message: 'Group is not available' });
+    }
+
+    sendGroupsToUser(req.user.username);
+    res.json({ group });
+});
+
+app.post('/groups/:groupId/unhide', authenticateHttp, (req, res) => {
+    const group = setGroupHidden({
+        groupId: Number(req.params.groupId),
+        username: req.user.username,
+        hidden: false
+    });
+
+    if (!group) {
+        return res.status(404).json({ message: 'Group is not available' });
+    }
+
+    sendGroupsToUser(req.user.username);
+    res.json({ group });
+});
+
+app.post('/groups/:groupId/delete', authenticateHttp, (req, res) => {
+    const result = hardDeleteGroup({
+        groupId: Number(req.params.groupId),
+        username: req.user.username,
+        role: req.user.role
+    });
+
+    if (!result) {
+        return res.status(403).json({ message: 'Only the group creator or an administrator can delete this group' });
+    }
+
+    result.members.forEach((memberUsername) => {
+        sendToUser(memberUsername, {
+            type: 'group-deleted',
+            group_id: result.id,
+            name: result.name,
+            deleted_by: req.user.username
+        });
+        sendGroupsToUser(memberUsername);
+    });
+
+    res.json({ group: result });
+});
+
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
@@ -253,6 +340,19 @@ function sendToUser(username, payload) {
     if (client && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(payload));
     }
+}
+
+function sendGroupsToUser(username) {
+    sendToUser(username, {
+        type: 'groups',
+        groups: listGroupsForUser(username)
+    });
+}
+
+function sendToGroupMembers(groupId, payload) {
+    listGroupMemberUsernames(groupId).forEach((memberUsername) => {
+        sendToUser(memberUsername, payload);
+    });
 }
 
 function sendToConversationUsers(message, payload) {
@@ -323,6 +423,7 @@ wss.on('connection', (ws, req) => {
     }
     onlineUsers.set(ws.username, ws);
     broadcastOnlineUsers();
+    sendGroupsToUser(ws.username);
 
     console.log(ws.nickname + ' connected');
 
@@ -348,6 +449,122 @@ wss.on('connection', (ws, req) => {
                 with: msgObj.with,
                 messages: history
             }));
+            return;
+        }
+
+        if (msgObj.type === 'group-history' && msgObj.group_id) {
+            const groupId = Number(msgObj.group_id);
+            const messages = loadGroupMessages({ groupId, username: ws.username });
+
+            if (!messages) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group is not available' }));
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                type: 'group-history',
+                group_id: groupId,
+                messages
+            }));
+            return;
+        }
+
+        if (msgObj.type === 'group-chat' && msgObj.group_id) {
+            const text = String(msgObj.message || '').trim();
+            const groupId = Number(msgObj.group_id);
+
+            if (!text) return;
+
+            const message = saveGroupMessage({
+                groupId,
+                sender: ws.username,
+                message: text
+            });
+
+            if (!message) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Unable to send group message' }));
+                return;
+            }
+
+            sendToGroupMembers(groupId, {
+                type: 'group-chat',
+                id: message.id,
+                group_id: message.group_id,
+                sender: message.sender,
+                sender_nickname: message.sender_nickname,
+                message: message.message,
+                timestamp: message.timestamp
+            });
+            return;
+        }
+
+        if (msgObj.type === 'edit-group-message') {
+            const text = String(msgObj.message || '').trim();
+            if (!text) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Message cannot be empty' }));
+                return;
+            }
+
+            const message = updateGroupMessage({
+                id: Number(msgObj.id),
+                sender: ws.username,
+                message: text
+            });
+
+            if (!message) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Unable to edit this group message' }));
+                return;
+            }
+
+            sendToGroupMembers(message.group_id, {
+                type: 'group-message-edited',
+                id: message.id,
+                group_id: message.group_id,
+                sender: message.sender,
+                message: message.message,
+                edited_at: message.edited_at
+            });
+            return;
+        }
+
+        if (msgObj.type === 'delete-group-message') {
+            const message = softDeleteGroupMessage({
+                id: Number(msgObj.id),
+                sender: ws.username
+            });
+
+            if (!message) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Unable to delete this group message' }));
+                return;
+            }
+
+            sendToGroupMembers(message.group_id, {
+                type: 'group-message-deleted',
+                id: message.id,
+                group_id: message.group_id,
+                sender: message.sender
+            });
+            return;
+        }
+
+        if ((msgObj.type === 'group-typing' || msgObj.type === 'group-stop-typing') && msgObj.group_id) {
+            const groupId = Number(msgObj.group_id);
+            const members = listGroupMemberUsernames(groupId);
+
+            if (!members.includes(ws.username)) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group is not available' }));
+                return;
+            }
+
+            members.forEach((memberUsername) => {
+                if (memberUsername === ws.username) return;
+                sendToUser(memberUsername, {
+                    type: msgObj.type,
+                    group_id: groupId,
+                    sender: ws.username,
+                    user: ws.nickname
+                });
+            });
             return;
         }
 

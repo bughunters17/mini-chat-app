@@ -51,7 +51,8 @@
   margin: 4px 0 0;
 }
 
-.user-list {
+.user-list,
+.group-list {
   display: grid;
   gap: 8px;
   padding: 0 12px 12px;
@@ -92,6 +93,16 @@
 .user-row.is-online .presence-dot {
   background: var(--success);
   box-shadow: 0 0 0 4px rgba(48, 209, 88, 0.14);
+}
+
+.group-heading {
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.group-dot {
+  background: var(--brand);
+  box-shadow: 0 0 0 4px rgba(52, 120, 246, 0.14);
 }
 
 .user-row-content {
@@ -471,4 +482,156 @@
     grid-column: 2;
     justify-content: flex-start;
   }
+}
+
+.group-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.mini-action {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mini-action.muted {
+  background: rgba(15, 23, 42, 0.12);
+  color: var(--text-main);
+}
+
+.mini-action.is-active {
+  background: rgba(15, 23, 42, 0.24);
+}
+
+.group-row {
+  position: relative;
+}
+
+.group-row-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.group-row-action {
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.10);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.group-row-action:hover {
+  background: rgba(15, 23, 42, 0.18);
+}
+
+.group-row-action.unhide {
+  background: rgba(52, 120, 246, 0.14);
+  color: var(--brand);
+}
+
+.group-row-action.delete {
+  background: rgba(255, 69, 58, 0.14);
+  color: var(--danger);
+}
+
+.hidden-groups-panel {
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.hidden-groups-panel[hidden] {
+  display: none;
+}
+
+.compact-heading {
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+.hidden-dot {
+  background: #64748b;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.14);
+}
+
+
+/* Dashboard dark-mode surface overrides */
+:root:not([data-theme="light"]) .user-row,
+:root:not([data-theme="light"]) .admin-user-row {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+:root:not([data-theme="light"]) .user-row:hover,
+:root:not([data-theme="light"]) .user-row.is-active {
+  background: rgba(30, 41, 59, 0.82);
+  border-color: rgba(52, 120, 246, 0.42);
+}
+
+:root:not([data-theme="light"]) .session-empty,
+:root:not([data-theme="light"]) .typing-indicator {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.58);
+}
+
+:root:not([data-theme="light"]) .message.other {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.86);
+}
+
+:root:not([data-theme="light"]) .session-input {
+  border-top-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+:root:not([data-theme="light"]) .session-input input {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(2, 6, 23, 0.48);
+}
+
+:root:not([data-theme="light"]) .session-input input:focus {
+  background: rgba(15, 23, 42, 0.76);
+}
+
+:root:not([data-theme="light"]) .mini-action.muted,
+:root:not([data-theme="light"]) .group-row-action {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text-main);
+}
+
+
+.unread-badge {
+  min-width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(255, 69, 58, 0.26);
+}
+
+.unread-badge[hidden] {
+  display: none;
+}
+
+.group-row .unread-badge {
+  margin-left: 8px;
 }

@@ -25,6 +25,33 @@ db.exec(`
     edited_at DATETIME,
     deleted_at DATETIME
   );
+
+  CREATE TABLE IF NOT EXISTS chat_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    created_by TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS group_members (
+    group_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    hidden_at DATETIME,
+    PRIMARY KEY (group_id, username),
+    FOREIGN KEY (group_id) REFERENCES chat_groups(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS group_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL,
+    sender TEXT NOT NULL,
+    message TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    edited_at DATETIME,
+    deleted_at DATETIME,
+    FOREIGN KEY (group_id) REFERENCES chat_groups(id)
+  );
 `);
 
 function ensureColumn(table, column, definition) {
@@ -43,6 +70,9 @@ ensureColumn('users', 'deleted_at', 'deleted_at DATETIME');
 ensureColumn('users', 'created_at', 'created_at DATETIME');
 ensureColumn('messages', 'edited_at', 'edited_at DATETIME');
 ensureColumn('messages', 'deleted_at', 'deleted_at DATETIME');
+ensureColumn('group_members', 'hidden_at', 'hidden_at DATETIME');
+ensureColumn('group_messages', 'edited_at', 'edited_at DATETIME');
+ensureColumn('group_messages', 'deleted_at', 'deleted_at DATETIME');
 
 console.log('Tables created or verified');
 

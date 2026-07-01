@@ -223,3 +223,31 @@
     transform: translateY(-3px);
   }
 }
+
+
+/* Chat dark-mode surface overrides */
+:root:not([data-theme="light"]) .chat-messages {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.22), rgba(15, 23, 42, 0.38)),
+    rgba(2, 6, 23, 0.18);
+}
+
+:root:not([data-theme="light"]) .message.other,
+:root:not([data-theme="light"]) .typing-indicator {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.86);
+}
+
+:root:not([data-theme="light"]) .chat-input {
+  border-top-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+:root:not([data-theme="light"]) .chat-input input {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(2, 6, 23, 0.48);
+}
+
+:root:not([data-theme="light"]) .chat-input input:focus {
+  background: rgba(15, 23, 42, 0.76);
+}

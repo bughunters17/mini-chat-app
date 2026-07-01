@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem('mc_theme') === 'light' ? 'light' : 'dark';
+  </script>
   <title>MessenCharles Dashboard</title>
   <link rel="stylesheet" href="/css/theme.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
@@ -34,6 +37,24 @@
           </div>
           <div id="online-users" class="user-list"></div>
           <p class="empty-state dashboard-empty" id="online-empty">No other users are available.</p>
+
+          <div class="section-heading group-heading">
+            <h2>Groups</h2>
+            <div class="group-heading-actions">
+              <button id="new-group-btn" class="mini-action" type="button">New</button>
+              <button id="toggle-hidden-groups" class="mini-action muted" type="button">Hidden</button>
+            </div>
+          </div>
+          <div id="group-list" class="group-list"></div>
+          <p class="empty-state dashboard-empty" id="group-empty">No groups are available.</p>
+          <div id="hidden-groups-panel" class="hidden-groups-panel" hidden>
+            <div class="section-heading compact-heading">
+              <h2>Hidden Groups</h2>
+              <span>Muted from list</span>
+            </div>
+            <div id="hidden-group-list" class="group-list hidden-group-list"></div>
+            <p class="empty-state dashboard-empty" id="hidden-group-empty">No hidden groups.</p>
+          </div>
         </section>
 
         <section class="liquid-panel dashboard-section session-section">
@@ -68,6 +89,7 @@
     </section>
   </main>
 
-  <script type="module" src="./js/dashboard.js"></script>
+  <script type="module" src="./js/dashboard.js?v=custom-groups-20260701"></script>
+  <script src="/js/theme.js"></script>
 </body>
 </html>

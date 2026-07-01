@@ -107,3 +107,22 @@
 .login-screen .error.success {
   color: #047857;
 }
+
+
+/* Auth dark-mode surface overrides */
+:root:not([data-theme="light"]) .login-screen input {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(2, 6, 23, 0.48);
+}
+
+:root:not([data-theme="light"]) .login-screen input:focus {
+  background: rgba(15, 23, 42, 0.76);
+}
+
+:root:not([data-theme="light"]) .login-screen .error {
+  color: #fca5a5;
+}
+
+:root:not([data-theme="light"]) .login-screen .error.success {
+  color: #86efac;
+}

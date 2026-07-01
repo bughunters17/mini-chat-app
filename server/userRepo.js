@@ -127,10 +127,20 @@ function deleteNormalUser(username, adminUsername) {
     const deletedUser = mapPublicUser(user);
 
     const result = db.transaction(() => {
-        const messages = db.prepare(`
+        const directMessages = db.prepare(`
             DELETE FROM messages
             WHERE sender = ? OR receiver = ?
         `).run(normalizedUsername, normalizedUsername);
+
+        const groupMessages = db.prepare(`
+            DELETE FROM group_messages
+            WHERE sender = ?
+        `).run(normalizedUsername);
+
+        db.prepare(`
+            DELETE FROM group_members
+            WHERE username = ?
+        `).run(normalizedUsername);
 
         const users = db.prepare(`
             DELETE FROM users
@@ -138,7 +148,7 @@ function deleteNormalUser(username, adminUsername) {
         `).run(normalizedUsername);
 
         return {
-            messagesDeleted: messages.changes,
+            messagesDeleted: directMessages.changes + groupMessages.changes,
             usersDeleted: users.changes
         };
     })();

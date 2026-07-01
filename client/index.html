@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem('mc_theme') === 'light' ? 'light' : 'dark';
+  </script>
   <title>MessenCharles</title>
   <link rel="stylesheet" href="/css/theme.css" />
   <link rel="stylesheet" href="/css/landingpage.css" />
@@ -66,5 +69,6 @@
       </div>
     </section>
   </main>
+  <script src="/js/theme.js"></script>
 </body>
 </html>
