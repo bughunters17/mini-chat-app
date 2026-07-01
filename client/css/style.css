@@ -8,9 +8,9 @@
 .chat-header {
   min-height: var(--toolbar-height);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding: 14px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.44);
   background: rgba(255, 255, 255, 0.38);
@@ -18,6 +18,20 @@
 
 .chat-recipient {
   min-width: 0;
+  overflow: hidden;
+}
+
+.chat-title,
+.chat-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-header .theme-toggle,
+.chat-header .logout-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .chat-messages {
@@ -121,7 +135,9 @@
   }
 
   .chat-header {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    padding: 12px;
   }
 
   .chat-header .window-chrome {
