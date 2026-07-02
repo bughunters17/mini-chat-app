@@ -135,6 +135,34 @@
   flex: 0 0 auto;
 }
 
+.session-heading-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-call-btn {
+  min-height: 32px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+  box-shadow: 0 10px 24px rgba(52, 120, 246, 0.22);
+}
+
+.session-call-btn:hover {
+  transform: translateY(-1px);
+}
+
+.session-call-btn[hidden] {
+  display: none;
+}
+
 .session-chat {
   flex: 1;
   min-height: 0;
@@ -634,4 +662,133 @@
 
 .group-row .unread-badge {
   margin-left: 8px;
+}
+
+
+.group-call-panel {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 10px;
+  margin: 0 16px 12px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.group-call-panel[hidden] {
+  display: none;
+}
+
+.group-call-stage {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.6fr) minmax(0, 1fr);
+  gap: 10px;
+  min-height: 160px;
+}
+
+.group-local-video,
+.group-remote-video {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  border-radius: 14px;
+  background: #020617;
+  object-fit: cover;
+}
+
+.group-local-video {
+  border: 2px solid rgba(255, 255, 255, 0.58);
+}
+
+.group-remote-videos {
+  min-height: 160px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.group-remote-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #020617;
+}
+
+.group-remote-label {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-call-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-call-controls p {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.group-call-action {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.group-call-action.accept {
+  background: var(--success);
+}
+
+.group-call-action.decline,
+.group-call-action.hangup {
+  background: var(--danger);
+}
+
+@media (max-width: 760px) {
+  .group-call-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.group-call-action.media-toggle {
+  background: rgba(148, 163, 184, 0.28);
+  color: var(--text-main);
+}
+
+.group-call-action.media-toggle.is-off {
+  background: rgba(239, 68, 68, 0.82);
+  color: #fff;
+}
+
+.group-call-controls {
+  flex-wrap: wrap;
+}
+
+
+.group-call-action.pip-toggle {
+  background: rgba(52, 120, 246, 0.86);
+  color: #fff;
 }

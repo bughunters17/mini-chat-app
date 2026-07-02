@@ -63,8 +63,27 @@
               <h2 id="session-title">Conversation</h2>
               <p id="session-subtitle">Select a user to view history and start chatting.</p>
             </div>
-            <span id="session-status">Session</span>
+            <div class="session-heading-actions">
+              <button id="session-video-call" class="session-call-btn" type="button" hidden>Video</button>
+              <span id="session-status">Session</span>
+            </div>
           </div>
+
+          <section id="group-call-panel" class="group-call-panel" hidden>
+            <div class="group-call-stage">
+              <video id="group-local-video" class="group-local-video" autoplay muted playsinline></video>
+              <div id="group-remote-videos" class="group-remote-videos"></div>
+            </div>
+            <div class="group-call-controls">
+              <p id="group-call-status">Group call ready</p>
+              <button id="group-toggle-pip" class="group-call-action pip-toggle" type="button" hidden>Pop Out</button>
+              <button id="group-toggle-camera" class="group-call-action media-toggle" type="button" hidden>Camera Off</button>
+              <button id="group-toggle-mic" class="group-call-action media-toggle" type="button" hidden>Mute</button>
+              <button id="group-accept-call" class="group-call-action accept" type="button" hidden>Accept</button>
+              <button id="group-decline-call" class="group-call-action decline" type="button" hidden>Decline</button>
+              <button id="group-hangup-call" class="group-call-action hangup" type="button" hidden>End</button>
+            </div>
+          </section>
 
           <div class="session-chat">
             <div class="session-empty" id="session-empty">Your selected conversation will open here.</div>
@@ -89,7 +108,7 @@
     </section>
   </main>
 
-  <script type="module" src="./js/dashboard.js?v=custom-groups-20260701"></script>
+  <script type="module" src="./js/dashboard.js?v=pip-20260702"></script>
   <script src="/js/theme.js"></script>
 </body>
 </html>

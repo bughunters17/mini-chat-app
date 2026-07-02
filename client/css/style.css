@@ -8,7 +8,7 @@
 .chat-header {
   min-height: var(--toolbar-height);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 10px;
   padding: 14px 18px;
@@ -135,7 +135,7 @@
   }
 
   .chat-header {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     gap: 8px;
     padding: 12px;
   }
@@ -266,4 +266,126 @@
 
 :root:not([data-theme="light"]) .chat-input input:focus {
   background: rgba(15, 23, 42, 0.76);
+}
+
+
+.call-panel {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.call-panel[hidden] {
+  display: none;
+}
+
+.call-video-stage {
+  position: relative;
+  min-height: 240px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.20);
+  border-radius: 18px;
+  background: #020617;
+}
+
+.remote-video,
+.local-video {
+  background: #020617;
+}
+
+.remote-video {
+  width: 100%;
+  height: min(46svh, 420px);
+  min-height: 240px;
+  display: block;
+  object-fit: cover;
+}
+
+.local-video {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: min(28%, 180px);
+  aspect-ratio: 4 / 3;
+  border: 2px solid rgba(255, 255, 255, 0.76);
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+.call-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.call-controls p {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.call-action {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.call-action.accept {
+  background: var(--success);
+}
+
+.call-action.decline,
+.call-action.hangup {
+  background: var(--danger);
+}
+
+.call-btn {
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .call-panel {
+    padding: 10px 12px;
+  }
+
+  .call-video-stage,
+  .remote-video {
+    min-height: 220px;
+  }
+
+  .local-video {
+    width: 34%;
+  }
+}
+
+
+.call-action.media-toggle {
+  background: rgba(148, 163, 184, 0.28);
+  color: var(--text-main);
+}
+
+.call-action.media-toggle.is-off {
+  background: rgba(239, 68, 68, 0.82);
+  color: #fff;
+}
+
+.call-controls {
+  flex-wrap: wrap;
+}
+
+
+.call-action.pip-toggle {
+  background: rgba(52, 120, 246, 0.86);
+  color: #fff;
 }

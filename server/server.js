@@ -568,12 +568,115 @@ wss.on('connection', (ws, req) => {
             return;
         }
 
+        if (msgObj.type === 'group-call-start' && msgObj.group_id) {
+            const groupId = Number(msgObj.group_id);
+            const members = listGroupMemberUsernames(groupId);
+
+            if (!members.includes(ws.username)) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group is not available for a call' }));
+                return;
+            }
+
+            members.forEach((memberUsername) => {
+                if (memberUsername === ws.username) return;
+                sendToUser(memberUsername, {
+                    type: 'group-call-invite',
+                    group_id: groupId,
+                    from: ws.username,
+                    user: ws.nickname
+                });
+            });
+            return;
+        }
+
+        if (msgObj.type === 'group-call-join' && msgObj.group_id) {
+            const groupId = Number(msgObj.group_id);
+            const members = listGroupMemberUsernames(groupId);
+
+            if (!members.includes(ws.username)) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group is not available for a call' }));
+                return;
+            }
+
+            members.forEach((memberUsername) => {
+                if (memberUsername === ws.username) return;
+                sendToUser(memberUsername, {
+                    type: 'group-call-join',
+                    group_id: groupId,
+                    from: ws.username,
+                    user: ws.nickname
+                });
+            });
+            return;
+        }
+
+        if (['group-call-offer', 'group-call-answer', 'group-ice-candidate'].includes(msgObj.type) && msgObj.group_id && msgObj.to) {
+            const groupId = Number(msgObj.group_id);
+            const members = listGroupMemberUsernames(groupId);
+
+            if (!members.includes(ws.username) || !members.includes(msgObj.to)) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group call participant is not available' }));
+                return;
+            }
+
+            sendToUser(msgObj.to, {
+                type: msgObj.type,
+                group_id: groupId,
+                from: ws.username,
+                user: ws.nickname,
+                offer: msgObj.offer,
+                answer: msgObj.answer,
+                candidate: msgObj.candidate
+            });
+            return;
+        }
+
+        if (['group-call-hangup', 'group-call-decline'].includes(msgObj.type) && msgObj.group_id) {
+            const groupId = Number(msgObj.group_id);
+            const members = listGroupMemberUsernames(groupId);
+
+            if (!members.includes(ws.username)) {
+                ws.send(JSON.stringify({ type: 'error', message: 'Group is not available for a call' }));
+                return;
+            }
+
+            members.forEach((memberUsername) => {
+                if (memberUsername === ws.username) return;
+                sendToUser(memberUsername, {
+                    type: msgObj.type,
+                    group_id: groupId,
+                    from: ws.username,
+                    user: ws.nickname
+                });
+            });
+            return;
+        }
+
         if ((msgObj.type === 'typing' || msgObj.type === 'stop-typing') && msgObj.to) {
             sendToUser(msgObj.to, {
                 type: msgObj.type,
                 sender: ws.username,
                 user: ws.nickname,
                 to: msgObj.to
+            });
+            return;
+        }
+
+        if (['call-offer', 'call-answer', 'ice-candidate', 'call-hangup', 'call-decline'].includes(msgObj.type) && msgObj.to) {
+            const recipient = findUserByUsername(msgObj.to);
+
+            if (!recipient || recipient.status !== 'active') {
+                ws.send(JSON.stringify({ type: 'error', message: 'User is not available for a call' }));
+                return;
+            }
+
+            sendToUser(msgObj.to, {
+                type: msgObj.type,
+                from: ws.username,
+                user: ws.nickname,
+                offer: msgObj.offer,
+                answer: msgObj.answer,
+                candidate: msgObj.candidate
             });
             return;
         }

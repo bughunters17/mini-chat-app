@@ -23,8 +23,25 @@
           <p class="chat-title">MessenCharles</p>
           <p class="chat-subtitle">Private conversation</p>
         </div>
+        <button id="callBtn" class="logout-btn call-btn" type="button">Video</button>
         <button id="logoutBtn" class="logout-btn" type="button">Close</button>
       </header>
+
+      <section id="call-panel" class="call-panel" hidden>
+        <div class="call-video-stage">
+          <video id="remote-video" class="remote-video" autoplay playsinline></video>
+          <video id="local-video" class="local-video" autoplay muted playsinline></video>
+        </div>
+        <div class="call-controls">
+          <p id="call-status">Ready to call</p>
+          <button id="toggle-pip" class="call-action pip-toggle" type="button" hidden>Pop Out</button>
+          <button id="toggle-camera" class="call-action media-toggle" type="button" hidden>Camera Off</button>
+          <button id="toggle-mic" class="call-action media-toggle" type="button" hidden>Mute</button>
+          <button id="accept-call" class="call-action accept" type="button" hidden>Accept</button>
+          <button id="decline-call" class="call-action decline" type="button" hidden>Decline</button>
+          <button id="hangup-call" class="call-action hangup" type="button">End</button>
+        </div>
+      </section>
 
       <div class="chat-messages" id="chat" aria-live="polite"></div>
 
@@ -44,7 +61,7 @@
     </section>
   </main>
 
-  <script type="module" src="./js/chat.js"></script>
+  <script type="module" src="./js/chat.js?v=pip-20260702"></script>
   <script src="/js/theme.js"></script>
 </body>
 </html>
